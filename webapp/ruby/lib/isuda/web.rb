@@ -296,7 +296,7 @@ module Isuda
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
       |, *bound)
       update_total_entries
-      redis.hset(keyword, :keyword_stars, '')
+      redis.hset(keyword, :keyword_stars, [])
 
       redirect_found '/'
     end
@@ -311,7 +311,7 @@ module Isuda
       entry[:html] = htmlify(entry[:description])
 
       stars = cached_keyword.last
-      entry[:stars] = stars.empty? ? nil : JSON.parse(stars)
+      entry[:stars] = JSON.parse(stars)
 
       locals = {
         entry: entry,
