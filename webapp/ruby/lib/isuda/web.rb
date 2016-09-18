@@ -30,7 +30,6 @@ module Isuda
 
     set :session_secret, 'tonymoris'
     set :isupam_origin, ENV['ISUPAM_ORIGIN'] || 'http://localhost:5050'
-    set :isutar_origin, ENV['ISUTAR_ORIGIN'] || 'http://localhost:5001'
 
     configure :development do
       require 'sinatra/reloader'
@@ -151,7 +150,7 @@ module Isuda
       end
 
       def load_stars(keyword)
-        isutar_url = URI(settings.isutar_origin)
+        isutar_url = URI(settings.isuda_origin)
         isutar_url.path = '/stars'
         isutar_url.query = URI.encode_www_form(keyword: keyword)
         body = Net::HTTP.get(isutar_url)
