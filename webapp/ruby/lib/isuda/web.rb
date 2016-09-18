@@ -113,6 +113,7 @@ module Isuda
           INSERT INTO user (name, salt, password, created_at)
           VALUES (?, ?, ?, NOW())
         |, name, salt, salted_password)
+        redis.set("user_#{name}", { id: db.last_id, salt: salt, password: salted_password }.to_json)
         db.last_id
       end
 
@@ -194,7 +195,9 @@ module Isuda
       db.xquery(%| DELETE FROM entry WHERE id > 7101 |)
       isutar_db.xquery('TRUNCATE star')
 
-      update_total_entries
+      db.xquery(%| select id, password, salt from user |).find_each do |user|
+        redis.set("user_#{user.name}", { id: user.id, salt: user.salt, password: user.password }.to_json)
+      end
 
       content_type :json
       JSON.generate(result: 'ok')
@@ -260,11 +263,11 @@ module Isuda
     post '/login' do
       output_request_body
       name = params[:name]
-      user = db.xquery(%| select id, password, salt from user where name = ? limit 1 |, name).first
+      user = JSON.parse(redis.get("user_#{name}"))
       halt(403) unless user
-      halt(403) unless user[:password] == encode_with_salt(password: params[:password], salt: user[:salt])
+      halt(403) unless user['password'] == encode_with_salt(password: params[:password], salt: user['salt'])
 
-      session[:user_id] = user[:id]
+      session[:user_id] = user['id']
 
       redirect_found '/'
     end
