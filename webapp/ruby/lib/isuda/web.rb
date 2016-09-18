@@ -97,6 +97,12 @@ module Isuda
         ! validation['valid']
       end
 
+      def is_spam_keyword(keyword)
+        dalli.fetch("is_spam_keyword/#{keyword}") do
+          is_spam_content(keyword)
+        end
+      end
+
       def htmlify(content)
         keywords = db.xquery(%| select * from entry order by character_length(keyword) desc |)
         pattern = keywords.map {|k| Regexp.escape(k[:keyword]) }.join('|')
@@ -223,7 +229,7 @@ module Isuda
       keyword = params[:keyword] || ''
       halt(400) if keyword == ''
       description = params[:description]
-      halt(400) if is_spam_content(description) || is_spam_content(keyword)
+      halt(400) if is_spam_content(description) || is_spam_keyword(keyword)
 
       bound = [@user_id, keyword, description] * 2
       db.xquery(%|
