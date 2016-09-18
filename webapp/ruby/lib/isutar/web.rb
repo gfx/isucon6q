@@ -50,7 +50,7 @@ module Isutar
 
     get '/initialize' do
       dalli.flush
-      db.xquery('TRUNCATE star')
+      isutar_db.xquery('TRUNCATE star')
 
       content_type :json
       JSON.generate(result: 'ok')
@@ -58,7 +58,7 @@ module Isutar
 
     get '/stars' do
       keyword = params[:keyword] || ''
-      stars = db.xquery(%| select * from star where keyword = ? |, keyword).to_a
+      stars = isutar_db.xquery(%| select * from star where keyword = ? |, keyword).to_a
 
       content_type :json
       JSON.generate(stars: stars)
@@ -73,7 +73,7 @@ module Isutar
       halt(404) unless Net::HTTPSuccess === res
 
       user_name = params[:user]
-      db.xquery(%|
+      isutar_db.xquery(%|
         INSERT INTO star (keyword, user_name, created_at)
         VALUES (?, ?, NOW())
       |, keyword, user_name)

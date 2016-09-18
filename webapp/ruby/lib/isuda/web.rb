@@ -19,9 +19,15 @@ module Isuda
 
     set :erb, escape_html: true
     set :public_folder, File.expand_path('../../../../public', __FILE__)
+
     set :db_user, ENV['ISUDA_DB_USER'] || 'root'
     set :db_password, ENV['ISUDA_DB_PASSWORD'] || ''
     set :dsn, ENV['ISUDA_DSN'] || 'dbi:mysql:db=isuda'
+
+    set :isutar_db_user, ENV['ISUTAR_DB_USER'] || 'root'
+    set :isutar_db_password, ENV['ISUTAR_DB_PASSWORD'] || ''
+    set :isutar_dsn, ENV['ISUTAR_DSN'] || 'dbi:mysql:db=isutar'
+
     set :session_secret, 'tonymoris'
     set :isupam_origin, ENV['ISUPAM_ORIGIN'] || 'http://localhost:5050'
     set :isutar_origin, ENV['ISUTAR_ORIGIN'] || 'http://localhost:5001'
