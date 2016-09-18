@@ -351,13 +351,22 @@ module Isuda
       keyword = params[:keyword]
 
       # check if the keyword exists or not
-      db.xquery(%| select id from entry where keyword = ? |, keyword).first or halt(404)
+      cached_keyword = redis.hgetAll(keyword)
+      halt(404) if cached_keyword.empty?
+      # db.xquery(%| select id from entry where keyword = ? |, keyword).first or halt(404)
 
       user_name = params[:user]
-      isutar_db.xquery(%|
-        INSERT INTO star (keyword, user_name, created_at)
-        VALUES (?, ?, NOW())
-      |, keyword, user_name)
+      stars = JSON.parse(cached_keyword.last)
+      stars << { keyword: keyword, user_name: user_name }
+
+      # update cached_keyword
+      redis.del(keyword)
+      redis.hset(keyword, :keyword_stars, stars.to_json)
+
+      # isutar_db.xquery(%|
+      #   INSERT INTO star (keyword, user_name, created_at)
+      #   VALUES (?, ?, NOW())
+      # |, keyword, user_name)
 
       content_type :json
       JSON.generate(result: 'ok')
