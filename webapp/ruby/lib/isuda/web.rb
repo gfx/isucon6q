@@ -50,6 +50,7 @@ module Isuda
     end
 
     helpers do
+      # @return [Mysql2::Client]
       def db
         Thread.current[:db] ||=
           begin
@@ -67,6 +68,7 @@ module Isuda
           end
       end
 
+      # @return [Dalli::Client]
       def dalli
         Thread.current[:db] ||= Dalli::Client.new('localhost:11211', namespace: 'isuda')
       end
@@ -132,6 +134,8 @@ module Isuda
     end
 
     get '/initialize' do
+      dalli.flush
+
       db.xquery(%| DELETE FROM entry WHERE id > 7101 |)
       isutar_initialize_url = URI(settings.isutar_origin)
       isutar_initialize_url.path = '/initialize'
