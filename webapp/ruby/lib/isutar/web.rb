@@ -23,6 +23,7 @@ module Isutar
     end
 
     helpers do
+      # @return [Mysql2::Client]
       def db
         Thread.current[:db] ||=
           begin
@@ -40,12 +41,14 @@ module Isutar
           end
       end
 
+      # @return [Dalli::Client]
       def dalli
         Thread.current[:db] ||= Dalli::Client.new('localhost:11211', namespace: 'isutar')
       end
     end
 
     get '/initialize' do
+      dalli.flush
       db.xquery('TRUNCATE star')
 
       content_type :json
