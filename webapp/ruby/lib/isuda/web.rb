@@ -249,6 +249,7 @@ module Isuda
 
     post '/login' do
       output_request_body
+
       name = params[:name]
       user = db.xquery(%| select id, password, salt from user where name = ? limit 1 |, name).first
       halt(403) unless user
@@ -266,10 +267,14 @@ module Isuda
 
     post '/keyword', set_name: true, authenticate: true do
       output_request_body
+
       keyword = params[:keyword] || ''
       halt(400) if keyword == ''
-      description = params[:description]
-      halt(400) if is_spam_content(description) || is_spam_keyword(keyword)
+
+      if db.xquery(%| select id from entry where keyword = ? limit 1 |, keyword).first.nil?
+        description = params[:description]
+        halt(400) if is_spam_content(description) || is_spam_keyword(keyword)
+      end
 
       bound = [@user_id, keyword, description] * 2
       db.xquery(%|
