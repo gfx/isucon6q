@@ -1,0 +1,9 @@
+*~
+*.swp
+.ssh/
+tmp/
+temp/
+
+gfx/
+michiomochi/
+dex1t/
