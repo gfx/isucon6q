@@ -7,4 +7,11 @@ temp/
 gfx/
 michiomochi/
 dex1t/
-.local
+.local/
+
+webapp/go/
+webapp/js/
+webapp/perl/
+webapp/php/
+webapp/python/
+webapp/scala/
