@@ -296,7 +296,7 @@ module Isuda
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
       |, *bound)
       update_total_entries
-      redis.hset(:keyword_stars, keyword, "[]")
+      redis.hset(keyword, :keyword_stars, "[]")
 
       redirect_found '/'
     end
@@ -304,12 +304,14 @@ module Isuda
     get '/keyword/:keyword', set_name: true do
       keyword = params[:keyword] or halt(400)
 
-      cached_keyword = redis.hget(:keyword_stars, keyword)
-      halt(404) unless cached_keyword
+      cached_keyword = redis.hgetAll(keyword)
+      halt(404) if cached_keyword.empty?
 
       entry = db.xquery(%| select * from entry where keyword = ? |, keyword).first
       entry[:html] = htmlify(entry[:description])
-      entry[:stars] = JSON.parse(cached_keyword, symbolize_names: true)
+
+      stars = cached_keyword.last
+      entry[:stars] = JSON.parse(stars)
 
       locals = {
         entry: entry,
@@ -326,7 +328,7 @@ module Isuda
       end
 
       db.xquery(%| DELETE FROM entry WHERE keyword = ? |, keyword)
-      redis.hdel(:keyword_stars, keyword)
+      redis.del(keyword)
 
       redirect_found '/'
     end
@@ -339,26 +341,27 @@ module Isuda
       keyword = params[:keyword] || ''
 
       # stars = isutar_db.xquery(%| select * from star where keyword = ? |, keyword).to_a
-      stars = redis.hget(:keyword_stars, keyword)
+      stars = redis.hget(keyword, :keyword_stars)
 
       content_type :json
-      JSON.generate(stars: JSON.parse(stars, symbolize_names: true))
+      JSON.generate(stars: stars)
     end
 
     post '/stars' do
       keyword = params[:keyword]
 
       # check if the keyword exists or not
-      cached_keyword = redis.hget(:keyword_stars, keyword)
-      halt(404) unless cached_keyword
+      cached_keyword = redis.hgetAll(keyword)
+      halt(404) if cached_keyword.empty?
       # db.xquery(%| select id from entry where keyword = ? |, keyword).first or halt(404)
 
       user_name = params[:user]
-      stars = JSON.parse(cached_keyword, symbolize_names: true)
+      stars = JSON.parse(cached_keyword.last)
       stars << { keyword: keyword, user_name: user_name }
 
       # update cached_keyword
-      redis.hset(:keyword_stars, keyword, stars.to_json)
+      redis.del(keyword)
+      redis.hset(keyword, :keyword_stars, stars.to_json)
 
       # isutar_db.xquery(%|
       #   INSERT INTO star (keyword, user_name, created_at)
