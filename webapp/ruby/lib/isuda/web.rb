@@ -271,8 +271,8 @@ module Isuda
       keyword = params[:keyword] || ''
       halt(400) if keyword == ''
 
+      description = params[:description]
       if db.xquery(%| select id from entry where keyword = ? limit 1 |, keyword).first.nil?
-        description = params[:description]
         halt(400) if is_spam_content(description) || is_spam_keyword(keyword)
       end
 
