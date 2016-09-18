@@ -94,7 +94,7 @@ module Isuda
         res = Net::HTTP.post_form(isupam_uri, 'content' => content)
         validation = JSON.parse(res.body)
         validation['valid']
-        # ! validation['valid']
+        ! validation['valid']
       end
 
       def htmlify(content)
