@@ -209,9 +209,6 @@ module Isuda
       db.xquery(%| select id, name, password, salt from user |).each do |user|
         redis.set("user_#{user[:name]}", { id: user[:id], salt: user[:salt], password: user[:password] }.to_json)
       end
-      db.xquery(%| select keyword from entry |).each do |keyword|
-        redis.hset(:keyword_stars, keyword, "[]")
-      end
       update_total_entries
 
       load_entries(1, 10)
