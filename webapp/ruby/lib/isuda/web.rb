@@ -198,6 +198,7 @@ module Isuda
       db.xquery(%| select id, password, salt from user |).each do |user|
         redis.set("user_#{user['name']}", { id: user['id'], salt: user['salt'], password: user['password'] }.to_json)
       end
+      updalte_total_entries
 
       content_type :json
       JSON.generate(result: 'ok')
