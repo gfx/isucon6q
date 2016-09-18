@@ -43,7 +43,7 @@ module Isutar
 
       # @return [Dalli::Client]
       def dalli
-        Thread.current[:db] ||= Dalli::Client.new('localhost:11211', namespace: 'isutar')
+        Thread.current[:dalli] ||= Dalli::Client.new('localhost:11211', namespace: 'isutar')
       end
     end
 
