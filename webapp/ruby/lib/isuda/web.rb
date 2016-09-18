@@ -303,12 +303,14 @@ module Isuda
     get '/keyword/:keyword', set_name: true do
       keyword = params[:keyword] or halt(400)
 
-      cached_stars = redis.get(keyword)
-      halt(404) unless cached_stars
+      cached_keyword = redis.hgetAll(keyword)
+      halt(404) if cached_keyword.empty?
 
       entry = db.xquery(%| select * from entry where keyword = ? |, keyword).first
       entry[:html] = htmlify(entry[:description])
-      entry[:stars] = JSON.parse(cached_stars)
+
+      stars = cached_keyword.last
+      entry[:stars] = stars.empty? ? nil : JSON.parse(stars)
 
       locals = {
         entry: entry,
