@@ -10,5 +10,4 @@ if [ -f /var/log/nginx/access.log ]; then
 fi
 sudo systemctl restart mysql
 sudo systemctl restart isuda.ruby.service
-sudo systemctl restart isutar.ruby.service
 sudo systemctl restart nginx
