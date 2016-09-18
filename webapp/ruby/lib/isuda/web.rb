@@ -10,7 +10,6 @@ require 'rack/utils'
 require 'sinatra/base'
 require 'tilt/erubis'
 require 'newrelic_rpm'
-require 'dalli'
 require 'redis'
 
 module Isuda
@@ -94,13 +93,16 @@ module Isuda
             end
       end
 
-      # @return [Dalli::Client]
-      def dalli
-        Thread.current[:dalli] ||= Dalli::Client.new('localhost:11211')
-      end
-
       def redis
         Thread.current[:redis] ||= Redis.new
+      end
+
+      def cache(key) # with block
+        value = redis.get(key)
+        if value.nil?
+          value = yield
+        end
+        value
       end
 
       def register(name, pw)
@@ -127,7 +129,7 @@ module Isuda
       end
 
       def is_spam_keyword(keyword)
-        dalli.fetch("is_spam_keyword/#{keyword}") do
+        cache("is_spam_keyword/#{keyword}") do
           is_spam_content(keyword)
         end
       end
@@ -141,7 +143,7 @@ module Isuda
       def htmlify(content, keywords = load_keywords)
         pattern = keywords.map {|k| Regexp.escape(k) }.join('|')
 
-        dalli.fetch(Digest::SHA1.hexdigest(content + "\0" + pattern)) do
+        cache(Digest::SHA1.hexdigest(content + "\0" + pattern)) do
           kw2hash = {}
           hashed_content = content.gsub(/(#{pattern})/) {|m|
             matched_keyword = $1
@@ -187,7 +189,7 @@ module Isuda
     end
 
     get '/initialize' do
-      dalli.flush
+      redis.flushall
 
       db.xquery(%| DELETE FROM entry WHERE id > 7101 |)
       isutar_db.xquery('TRUNCATE star')
