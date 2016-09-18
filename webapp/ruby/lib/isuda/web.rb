@@ -207,7 +207,7 @@ module Isuda
       isutar_db.xquery('TRUNCATE star')
 
       db.xquery(%| select id, name, password, salt from user |).each do |user|
-        redis.set("user_#{user[:name]}", { id: user[:id], salt: user[:salt], password: user[:password] }.to_json)
+        redis.set("user_#{user[:name]}", { id: user[:id], name: user[:name], salt: user[:salt], password: user[:password] }.to_json)
       end
       update_total_entries
 
