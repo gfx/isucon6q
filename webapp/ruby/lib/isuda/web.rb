@@ -195,7 +195,7 @@ module Isuda
       db.xquery(%| DELETE FROM entry WHERE id > 7101 |)
       isutar_db.xquery('TRUNCATE star')
 
-      db.xquery(%| select id, password, salt from user |).find_each do |user|
+      db.xquery(%| select id, password, salt from user |).each do |user|
         redis.set("user_#{user.name}", { id: user.id, salt: user.salt, password: user.password }.to_json)
       end
 
