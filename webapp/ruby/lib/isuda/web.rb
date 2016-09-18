@@ -11,6 +11,7 @@ require 'sinatra/base'
 require 'tilt/erubis'
 require 'newrelic_rpm'
 require 'dalli'
+require 'redis'
 
 module Isuda
   class Web < ::Sinatra::Base
@@ -96,6 +97,10 @@ module Isuda
       # @return [Dalli::Client]
       def dalli
         Thread.current[:dalli] ||= Dalli::Client.new('localhost:11211')
+      end
+
+      def redis
+        Thread.current[:redis] ||= Redis.new('localhost:6379')
       end
 
       def register(name, pw)
