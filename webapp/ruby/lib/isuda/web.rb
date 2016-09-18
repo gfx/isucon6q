@@ -10,7 +10,6 @@ require 'rack/utils'
 require 'sinatra/base'
 require 'tilt/erubis'
 require 'newrelic_rpm'
-require 'dalli'
 require 'redis'
 
 module Isuda
@@ -94,13 +93,16 @@ module Isuda
             end
       end
 
-      # @return [Dalli::Client]
-      def dalli
-        Thread.current[:dalli] ||= Dalli::Client.new('localhost:11211')
-      end
-
       def redis
         Thread.current[:redis] ||= Redis.new
+      end
+
+      def cache(key) # with block
+        value = redis.get(key)
+        if value.nil?
+          value = yield
+        end
+        value
       end
 
       def register(name, pw)
@@ -128,7 +130,7 @@ module Isuda
       end
 
       def is_spam_keyword(keyword)
-        dalli.fetch("is_spam_keyword/#{keyword}") do
+        cache("is_spam_keyword/#{keyword}") do
           is_spam_content(keyword)
         end
       end
@@ -142,7 +144,7 @@ module Isuda
       def htmlify(content, keywords = load_keywords)
         pattern = keywords.map {|k| Regexp.escape(k) }.join('|')
 
-        dalli.fetch(Digest::SHA1.hexdigest(content + "\0" + pattern)) do
+        cache(Digest::SHA1.hexdigest(content + "\0" + pattern)) do
           kw2hash = {}
           hashed_content = content.gsub(/(#{pattern})/) {|m|
             matched_keyword = $1
@@ -177,10 +179,17 @@ module Isuda
         file.puts request.body.read
         file.close
       end
+
+      def total_entries
+        redis.get('total_entries')
+      end
+
+      def update_total_entries
+        redis.set('total_entries', db.xquery(%| SELECT count(*) AS total_entries FROM entry |).first[:total_entries].to_i)
+      end
     end
 
     get '/initialize' do
-      dalli.flush
       redis.flushall
 
       db.xquery(%| DELETE FROM entry WHERE id > 7101 |)
@@ -210,8 +219,6 @@ module Isuda
         entry[:html] = htmlify(entry[:description], keywords)
         entry[:stars] = load_stars(entry[:keyword])
       end
-
-      total_entries = db.xquery(%| SELECT count(*) AS total_entries FROM entry |).first[:total_entries].to_i
 
       last_page = (total_entries.to_f / per_page.to_f).ceil
       from = [1, page - 5].max
@@ -284,6 +291,7 @@ module Isuda
         ON DUPLICATE KEY UPDATE
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
       |, *bound)
+      update_total_entries
 
       redirect_found '/'
     end
