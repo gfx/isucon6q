@@ -339,7 +339,9 @@ module Isuda
 
     get '/stars' do
       keyword = params[:keyword] || ''
-      stars = isutar_db.xquery(%| select * from star where keyword = ? |, keyword).to_a
+
+      # stars = isutar_db.xquery(%| select * from star where keyword = ? |, keyword).to_a
+      stars = redis.hget(keyword, :keyword_stars)
 
       content_type :json
       JSON.generate(stars: stars)
