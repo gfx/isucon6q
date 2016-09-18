@@ -100,7 +100,7 @@ module Isuda
       end
 
       def redis
-        Thread.current[:redis] ||= Redis.new('localhost:6379')
+        Thread.current[:redis] ||= Redis.new
       end
 
       def register(name, pw)
