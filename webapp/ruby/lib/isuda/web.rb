@@ -69,9 +69,27 @@ module Isuda
           end
       end
 
+      # @return [Mysql2::Client]
+      def isutar_db
+        Thread.current[:isutar_db] ||=
+            begin
+              _, _, attrs_part = settings.isutar_dsn.split(':', 3)
+              attrs = Hash[attrs_part.split(';').map {|part| part.split('=', 2) }]
+              mysql = Mysql2::Client.new(
+                  username: settings.isutar_db_user,
+                  password: settings.isutar_db_password,
+                  database: attrs['db'],
+                  encoding: 'utf8mb4',
+                  init_command: %|SET SESSION sql_mode='TRADITIONAL,NO_AUTO_VALUE_ON_ZERO,ONLY_FULL_GROUP_BY'|,
+              )
+              mysql.query_options.update(symbolize_keys: true)
+              mysql
+            end
+      end
+
       # @return [Dalli::Client]
       def dalli
-        Thread.current[:dalli] ||= Dalli::Client.new('localhost:11211', namespace: 'isuda')
+        Thread.current[:dalli] ||= Dalli::Client.new('localhost:11211')
       end
 
       def register(name, pw)
@@ -150,9 +168,7 @@ module Isuda
       dalli.flush
 
       db.xquery(%| DELETE FROM entry WHERE id > 7101 |)
-      isutar_initialize_url = URI(settings.isutar_origin)
-      isutar_initialize_url.path = '/initialize'
-      Net::HTTP.get_response(isutar_initialize_url)
+      isutar_db.xquery('TRUNCATE star')
 
       content_type :json
       JSON.generate(result: 'ok')
@@ -263,14 +279,6 @@ module Isuda
       erb :keyword, locals: locals
     end
 
-    get '/check_keyword/:keyword', set_name: true do
-      keyword = params[:keyword] or halt(400)
-
-      entry = db.xquery(%| select id from entry where keyword = ? |, keyword).first or halt(404)
-      content_type :json
-      JSON.generate(id: entry[:id])
-    end
-
     post '/keyword/:keyword', set_name: true, authenticate: true do
       keyword = params[:keyword] or halt(400)
       is_delete = params[:delete] or halt(400)
@@ -282,6 +290,34 @@ module Isuda
       db.xquery(%| DELETE FROM entry WHERE keyword = ? |, keyword)
 
       redirect_found '/'
+    end
+
+    # ================================
+    # The isutar app
+    # ================================
+
+    get '/stars' do
+      keyword = params[:keyword] || ''
+      stars = isutar_db.xquery(%| select * from star where keyword = ? |, keyword).to_a
+
+      content_type :json
+      JSON.generate(stars: stars)
+    end
+
+    post '/stars' do
+      keyword = params[:keyword]
+
+      # check if the keyword exists or not
+      db.xquery(%| select id from entry where keyword = ? |, keyword).first or halt(404)
+
+      user_name = params[:user]
+      isutar_db.xquery(%|
+        INSERT INTO star (keyword, user_name, created_at)
+        VALUES (?, ?, NOW())
+      |, keyword, user_name)
+
+      content_type :json
+      JSON.generate(result: 'ok')
     end
   end
 end
