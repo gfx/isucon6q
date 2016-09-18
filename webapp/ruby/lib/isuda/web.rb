@@ -296,6 +296,7 @@ module Isuda
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
       |, *bound)
       update_total_entries
+      redis.hset(keyword, :keyword_stars, '')
 
       redirect_found '/'
     end
