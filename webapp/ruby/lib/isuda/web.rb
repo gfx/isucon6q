@@ -190,12 +190,6 @@ module Isuda
         redirect(path, 302)
       end
 
-      def output_request_body
-        file = File.open('request_body.log','a')
-        file.puts request.body.read
-        file.close
-      end
-
       def total_entries
         redis.get('total_entries')
       end
@@ -269,7 +263,6 @@ module Isuda
     end
 
     post '/login' do
-      output_request_body
       name = params[:name]
       user_cache = redis.get("user_#{name}")
       halt(403) unless user_cache
@@ -287,7 +280,6 @@ module Isuda
     end
 
     post '/keyword', set_name: true, authenticate: true do
-      output_request_body
       keyword = params[:keyword] || ''
       halt(400) if keyword == ''
       description = params[:description]
