@@ -114,7 +114,7 @@ module Isuda
           INSERT INTO user (name, salt, password, created_at)
           VALUES (?, ?, ?, NOW())
         |, name, salt, salted_password)
-        redis.set("user_#{name}", { id: db.last_id, salt: salt, password: salted_password }.to_json)
+        redis.set("user_#{name}", { id: db.last_id, name: name, salt: salt, password: salted_password }.to_json)
         db.last_id
       end
 
@@ -279,6 +279,7 @@ module Isuda
 
     get '/logout' do
       session[:user_id] = nil
+      session[:user_name] = nil
       redirect_found '/'
     end
 
