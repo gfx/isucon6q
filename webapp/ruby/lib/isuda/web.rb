@@ -264,8 +264,9 @@ module Isuda
     post '/login' do
       output_request_body
       name = params[:name]
-      user = JSON.parse(redis.get("user_#{name}"))
-      halt(403) unless user
+      user_cache = redis.get("user_#{name}")
+      halt(403) unless user_cache
+      user = JSON.parse(user_cache)
       halt(403) unless user['password'] == encode_with_salt(password: params[:password], salt: user['salt'])
 
       session[:user_id] = user['id']
