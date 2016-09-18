@@ -176,6 +176,14 @@ module Isuda
         file.puts request.body.read
         file.close
       end
+
+      def total_entries
+        redis.get('total_entries')
+      end
+
+      def update_total_entries
+        redis.set('total_entries', db.xquery(%| SELECT count(*) AS total_entries FROM entry |).first[:total_entries].to_i)
+      end
     end
 
     get '/initialize' do
@@ -183,6 +191,8 @@ module Isuda
 
       db.xquery(%| DELETE FROM entry WHERE id > 7101 |)
       isutar_db.xquery('TRUNCATE star')
+
+      update_total_entries
 
       content_type :json
       JSON.generate(result: 'ok')
@@ -204,8 +214,6 @@ module Isuda
         entry[:html] = htmlify(entry[:description], keywords)
         entry[:stars] = load_stars(entry[:keyword])
       end
-
-      total_entries = db.xquery(%| SELECT count(*) AS total_entries FROM entry |).first[:total_entries].to_i
 
       last_page = (total_entries.to_f / per_page.to_f).ceil
       from = [1, page - 5].max
@@ -278,6 +286,7 @@ module Isuda
         ON DUPLICATE KEY UPDATE
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
       |, *bound)
+      update_total_entries
 
       redirect_found '/'
     end
