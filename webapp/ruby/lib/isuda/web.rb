@@ -42,7 +42,7 @@ module Isuda
       condition {
         user_name = session[:user_name]
         if user_name
-          user = redis.get("user_#{user_name}")
+          user = JSON.parse(redis.get("user_#{user_name}"), symbolize_names: true)
           halt(403) unless user_name
 
           @user_id = user[:id]
