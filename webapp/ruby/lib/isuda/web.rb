@@ -127,11 +127,15 @@ module Isuda
         end
       end
 
-      def htmlify(content)
+      # @return [Regexp]
+      def keyword_pattern
         keywords = db.xquery(%| select * from entry order by character_length(keyword) desc |)
-        pattern = keywords.map {|k| Regexp.escape(k[:keyword]) }.join('|')
+        Regexp.union(keywords.map {|k| Regexp.escape(k[:keyword]) })
+      end
+
+      def htmlify(content, pattern = keyword_pattern)
         kw2hash = {}
-        hashed_content = content.gsub(/(#{pattern})/) {|m|
+        hashed_content = content.gsub(pattern) {|m|
           matched_keyword = $1
           "isuda_#{Digest::SHA1.hexdigest(matched_keyword)}".tap do |hash|
             kw2hash[matched_keyword] = hash
@@ -190,8 +194,9 @@ module Isuda
         LIMIT #{per_page}
         OFFSET #{per_page * (page - 1)}
       |)
+      pattern = keyword_pattern
       entries.each do |entry|
-        entry[:html] = htmlify(entry[:description])
+        entry[:html] = htmlify(entry[:description], pattern)
         entry[:stars] = load_stars(entry[:keyword])
       end
 
