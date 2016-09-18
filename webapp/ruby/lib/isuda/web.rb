@@ -170,6 +170,22 @@ module Isuda
         isutar_db.xquery(%| select * from star where keyword = ? |, keyword).to_a
       end
 
+      def load_entries(page, per_page)
+        entries = db.xquery(%|
+        SELECT * FROM entry
+        ORDER BY updated_at DESC
+        LIMIT #{per_page}
+        OFFSET #{per_page * (page - 1)}
+                            |)
+
+        keywords = load_keywords
+        entries.each do |entry|
+          entry[:html] = htmlify(entry[:description], keywords)
+          entry[:stars] = load_stars(entry[:keyword])
+        end
+        entries
+      end
+
       def redirect_found(path)
         redirect(path, 302)
       end
@@ -200,6 +216,8 @@ module Isuda
       end
       update_total_entries
 
+      load_entries(1, 10)
+
       content_type :json
       JSON.generate(result: 'ok')
     end
@@ -208,18 +226,7 @@ module Isuda
       per_page = 10
       page = (params[:page] || 1).to_i
 
-      entries = db.xquery(%|
-        SELECT * FROM entry
-        ORDER BY updated_at DESC
-        LIMIT #{per_page}
-        OFFSET #{per_page * (page - 1)}
-      |)
-
-      keywords = load_keywords
-      entries.each do |entry|
-        entry[:html] = htmlify(entry[:description], keywords)
-        entry[:stars] = load_stars(entry[:keyword])
-      end
+      entries = load_entries(page, per_page)
 
       last_page = (total_entries.to_f / per_page.to_f).ceil
       from = [1, page - 5].max
