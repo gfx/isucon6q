@@ -67,6 +67,10 @@ module Isuda
           end
       end
 
+      def dalli
+        Thread.current[:db] ||= Dalli::Client.new('localhost:11211', namespace: 'isuda')
+      end
+
       def register(name, pw)
         chars = [*'A'..'~']
         salt = 1.upto(20).map { chars.sample }.join('')

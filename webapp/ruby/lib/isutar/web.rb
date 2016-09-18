@@ -39,6 +39,10 @@ module Isutar
             mysql
           end
       end
+
+      def dalli
+        Thread.current[:db] ||= Dalli::Client.new('localhost:11211', namespace: 'isutar')
+      end
     end
 
     get '/initialize' do
