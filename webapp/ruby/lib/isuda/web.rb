@@ -127,23 +127,31 @@ module Isuda
         end
       end
 
-      def htmlify(content)
-        keywords = db.xquery(%| select * from entry order by character_length(keyword) desc |)
-        pattern = keywords.map {|k| Regexp.escape(k[:keyword]) }.join('|')
-        kw2hash = {}
-        hashed_content = content.gsub(/(#{pattern})/) {|m|
-          matched_keyword = $1
-          "isuda_#{Digest::SHA1.hexdigest(matched_keyword)}".tap do |hash|
-            kw2hash[matched_keyword] = hash
-          end
-        }
-        escaped_content = Rack::Utils.escape_html(hashed_content)
-        kw2hash.each do |(keyword, hash)|
-          keyword_url = url("/keyword/#{Rack::Utils.escape_path(keyword)}")
-          anchor = '<a href="%s">%s</a>' % [keyword_url, Rack::Utils.escape_html(keyword)]
-          escaped_content.gsub!(hash, anchor)
+      def load_keywords
+        db.xquery(%| select * from entry order by character_length(keyword) desc |).map do |x|
+          x[:keyword]
         end
-        escaped_content.gsub(/\n/, "<br />\n")
+      end
+
+      def htmlify(content, keywords = load_keywords)
+        pattern = keywords.map {|k| Regexp.escape(k) }.join('|')
+
+        dalli.fetch(Digest::SHA1.hexdigest(content) + "/" + pattern) do
+          kw2hash = {}
+          hashed_content = content.gsub(/(#{pattern})/) {|m|
+            matched_keyword = $1
+            "isuda_#{Digest::SHA1.hexdigest(matched_keyword)}".tap do |hash|
+              kw2hash[matched_keyword] = hash
+            end
+          }
+          escaped_content = Rack::Utils.escape_html(hashed_content)
+          kw2hash.each do |(keyword, hash)|
+            keyword_url = url("/keyword/#{Rack::Utils.escape_path(keyword)}")
+            anchor = '<a href="%s">%s</a>' % [keyword_url, Rack::Utils.escape_html(keyword)]
+            escaped_content.gsub!(hash, anchor)
+          end
+          escaped_content.gsub(/\n/, "<br />\n")
+        end
       end
 
       def uri_escape(str)
@@ -185,8 +193,10 @@ module Isuda
         LIMIT #{per_page}
         OFFSET #{per_page * (page - 1)}
       |)
+
+      keywords = load_keywords
       entries.each do |entry|
-        entry[:html] = htmlify(entry[:description])
+        entry[:html] = htmlify(entry[:description], keywords)
         entry[:stars] = load_stars(entry[:keyword])
       end
 
