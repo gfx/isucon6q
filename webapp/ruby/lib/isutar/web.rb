@@ -68,7 +68,7 @@ module Isutar
       keyword = params[:keyword]
 
       isuda_keyword_url = URI(settings.isuda_origin)
-      isuda_keyword_url.path = '/keyword/%s' % [Rack::Utils.escape_path(keyword)]
+      isuda_keyword_url.path = '/check_keyword/%s' % [Rack::Utils.escape_path(keyword)]
       res = Net::HTTP.get_response(isuda_keyword_url)
       halt(404) unless Net::HTTPSuccess === res
 
