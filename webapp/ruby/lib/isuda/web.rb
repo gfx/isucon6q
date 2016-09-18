@@ -249,6 +249,14 @@ module Isuda
       erb :keyword, locals: locals
     end
 
+    get '/check_keyword/:keyword', set_name: true do
+      keyword = params[:keyword] or halt(400)
+
+      entry = db.xquery(%| select id from entry where keyword = ? |, keyword).first or halt(404)
+      content_type :json
+      JSON.generate(id: entry[:id])
+    end
+
     post '/keyword/:keyword', set_name: true, authenticate: true do
       keyword = params[:keyword] or halt(400)
       is_delete = params[:delete] or halt(400)
