@@ -125,6 +125,12 @@ module Isuda
       def redirect_found(path)
         redirect(path, 302)
       end
+
+      def output_request_body
+        file = File.open('request_body.log','a')
+        file.puts request.body.read
+        file.close
+      end
     end
 
     get '/initialize' do
@@ -195,6 +201,7 @@ module Isuda
     end
 
     post '/login' do
+      output_request_body
       name = params[:name]
       user = db.xquery(%| select * from user where name = ? |, name).first
       halt(403) unless user
@@ -211,6 +218,7 @@ module Isuda
     end
 
     post '/keyword', set_name: true, authenticate: true do
+      output_request_body
       keyword = params[:keyword] || ''
       halt(400) if keyword == ''
       description = params[:description]
