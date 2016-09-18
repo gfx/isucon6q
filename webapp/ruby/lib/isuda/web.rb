@@ -136,7 +136,7 @@ module Isuda
       def htmlify(content, keywords = load_keywords)
         pattern = keywords.map {|k| Regexp.escape(k) }.join('|')
 
-        dalli.fetch(Digest::SHA1.hexdigest(content) + "/" + pattern) do
+        dalli.fetch(Digest::SHA1.hexdigest(content + "\0" + pattern)) do
           kw2hash = {}
           hashed_content = content.gsub(/(#{pattern})/) {|m|
             matched_keyword = $1
