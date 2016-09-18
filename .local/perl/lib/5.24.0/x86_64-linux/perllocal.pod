@@ -1,0 +1,176 @@
+=head2 Tue Sep 13 10:11:47 2016: C<Module> L<App::cpanminus|App::cpanminus>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.7042>
+
+=item *
+
+C<EXE_FILES: bin/cpanm>
+
+=back
+
+=head2 Tue Sep 13 10:11:49 2016: C<Module> L<Module::CPANfile|Module::CPANfile>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.1002>
+
+=item *
+
+C<EXE_FILES: script/cpanfile-dump script/mymeta-cpanfile>
+
+=back
+
+=head2 Tue Sep 13 10:11:51 2016: C<Module> L<Try::Tiny|Try::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.27>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Sep 13 10:11:52 2016: C<Module> L<Path::Tiny|Path::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.096>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Sep 13 10:11:54 2016: C<Module> L<JSON|JSON>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.90>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Sep 13 10:11:55 2016: C<Module> L<Module::Reader|Module::Reader>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.002003>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Sep 13 10:11:56 2016: C<Module> L<Class::Tiny|Class::Tiny>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.006>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Tue Sep 13 10:11:57 2016: C<Module> L<Carton|Carton>
+
+=over 4
+
+=item *
+
+C<installed into: /home/isucon/.local/perl/lib/site_perl/5.24.0>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: v1.0.28>
+
+=item *
+
+C<EXE_FILES: script/carton>
+
+=back
+
