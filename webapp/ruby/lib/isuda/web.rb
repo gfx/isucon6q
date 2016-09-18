@@ -70,7 +70,7 @@ module Isuda
 
       # @return [Dalli::Client]
       def dalli
-        Thread.current[:db] ||= Dalli::Client.new('localhost:11211', namespace: 'isuda')
+        Thread.current[:dalli] ||= Dalli::Client.new('localhost:11211', namespace: 'isuda')
       end
 
       def register(name, pw)
