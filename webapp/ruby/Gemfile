@@ -12,6 +12,8 @@ gem 'unicorn'
 gem 'lineprof'
 gem 'newrelic_rpm'
 
+gem 'redis'
+
 group :development do
   gem 'pry'
   gem 'foreman'
