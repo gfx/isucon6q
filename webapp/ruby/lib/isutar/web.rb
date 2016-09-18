@@ -6,6 +6,7 @@ require 'mysql2'
 require 'mysql2-cs-bind'
 require 'rack/utils'
 require 'sinatra/base'
+require 'dalli'
 
 module Isutar
   class Web < ::Sinatra::Base
