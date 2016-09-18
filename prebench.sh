@@ -1,6 +1,10 @@
 #!/bin/bash
 set -ex
 
+git pull
+
+(cd webapp/ruby && bundle install)
+
 if [ -f /var/log/nginx/access.log ]; then
     sudo mv /var/log/nginx/access.log /var/log/nginx/access.log.$(date "+%Y%m%d_%H%M%S")
 fi
